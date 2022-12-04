@@ -12,10 +12,11 @@
 
 // ### MAIN PROJECT SOURCE ###
 
-// ### Variables ###
+// ### Variables and macros ###
 
         .import source "variables.asm"
-
+        .import source "macros.asm"
+        
 BasicUpstart2(game)
 
 // ### Title screen scrolltext ###
