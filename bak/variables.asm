@@ -1,6 +1,6 @@
 // ******************************
-//            SNAKE BOMB
-//            ----------
+//         SNAKE vs BOMB
+//         -------------
 //
 //        By Richard Bayliss
 //
@@ -112,4 +112,9 @@
 .var death_bottom_left = 133
 .var death_bottom_right = 134
 
+// Status panel
+
+.const scorechars = $0776 // Score masking
+.const levelchars = $0788 // Level masxking (possibly single char)
+.const hiscorechars = $0792 // Hi score chars
 

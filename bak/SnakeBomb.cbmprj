@@ -4,7 +4,7 @@
 <!-- Project Target : C64 -->
 <Project>
     <Target>2</Target>
-    <Executable>snakebomb.prg</Executable>
+    <Executable>snakevsbomb.prg</Executable>
     <StartAddress>2049</StartAddress>
     <FilesGlobal>True</FilesGlobal>
     <BatchMode>False</BatchMode>
@@ -15,14 +15,14 @@
     <Comments>Snake Bomb is a fun vertical scrolling hi score collect/eat 'em up and avoid 'em up. Guide the snake at the bottom of the screen and eat the fruit, but avoid eating the bombs, otherwise the snake will explode and the game is over.</Comments>
     <Author>Richard Bayliss</Author>
     <Email />
-    <AutoLaunchName>snakebomb.prg</AutoLaunchName>
+    <AutoLaunchName>snakevsbomb.prg</AutoLaunchName>
     <NoSingleFileBuild>False</NoSingleFileBuild>
     <CreatedWithVersion>CBM prg Studio 4.0.0</CreatedWithVersion>
     <HasGitRepo>True</HasGitRepo>
     <GitIgnoreList />
     <UsingKickAssembler>True</UsingKickAssembler>
-    <KickOutputFile>_snakebomb.out</KickOutputFile>
-    <KickConfigFile>_snakebomb.cfg</KickConfigFile>
+    <KickOutputFile>_snakevsbomb.out</KickOutputFile>
+    <KickConfigFile>_snakvsebomb.cfg</KickConfigFile>
     <KickGenDebugInfo>True</KickGenDebugInfo>
     <Cartridge>
         <CrtBuildingCartridge>False</CrtBuildingCartridge>
@@ -45,8 +45,7 @@
         <PostBuildCommands />
     </BuildEvents>
     <BuildList>
-        <FileName>snakebomb.asm</FileName>
-        <FileName>macros.asm</FileName>
+        <FileName>snakevsbomb.asm</FileName>
     </BuildList>
     <DetermineBuildOrder>0</DetermineBuildOrder>
     <PaddingByte>0</PaddingByte>
@@ -74,7 +73,7 @@
             <IncludeInBuild>False</IncludeInBuild>
             <Regions />
             <Breakpoints />
-            <Bookmarks>121,</Bookmarks>
+            <Bookmarks>147,</Bookmarks>
             <Topmost>False</Topmost>
             <FileOpen>True</FileOpen>
         </SourceFile>
@@ -101,17 +100,6 @@
             <FileOpen>True</FileOpen>
         </SourceFile>
         <SourceFile>
-            <Name>snakebomb.asm</Name>
-            <PrgName>.prg</PrgName>
-            <FileType>12</FileType>
-            <IncludeInBuild>True</IncludeInBuild>
-            <Regions />
-            <Breakpoints />
-            <Bookmarks />
-            <Topmost>True</Topmost>
-            <FileOpen>True</FileOpen>
-        </SourceFile>
-        <SourceFile>
             <Name>snakebomb.cst</Name>
             <PrgName />
             <FileType>6</FileType>
@@ -132,6 +120,17 @@
             <Bookmarks />
             <Topmost>False</Topmost>
             <FileOpen>False</FileOpen>
+        </SourceFile>
+        <SourceFile>
+            <Name>snakevsbomb.asm</Name>
+            <PrgName>.prg</PrgName>
+            <FileType>12</FileType>
+            <IncludeInBuild>True</IncludeInBuild>
+            <Regions />
+            <Breakpoints />
+            <Bookmarks />
+            <Topmost>True</Topmost>
+            <FileOpen>True</FileOpen>
         </SourceFile>
         <SourceFile>
             <Name>titlescreen.asm</Name>

@@ -1,6 +1,6 @@
 // ******************************
-//            SNAKE BOMB
-//            ----------
+//         SNAKE vs BOMB
+//         -------------
 //
 //        By Richard Bayliss
 //
@@ -28,6 +28,28 @@ zeropointers:
         inx
         cpx #pointersend-pointers
         bne zeropointers
+
+// Zero score 
+        ldx #$00
+zeroscore:
+        lda #$30
+        sta score,x
+        inx
+        cpx #6
+        bne zeroscore
+        
+
+// Initialize stuff
+
+        lda #1
+        sta scrollspeed+1
+        lda #0
+        sta levelpointer
+        sta leveltime
+        sta leveltime+1
+        lda #8
+        sta spawnlimit
+
 
 // Draw the game screen:
 
@@ -87,6 +109,10 @@ backuploop:
 
 
         jsr setupplayer
+
+        // Mask score panel to screen once
+        
+        jsr maskpanel
 
         ldx #$fb
         txs
@@ -214,9 +240,10 @@ clearsid:
 
 gameloop:
         jsr synctimer
-        jsr objtospr
+        
         jsr gamescroller
         jsr gameanimationandcontrol
+        jsr gamecontrol
         jmp gameloop
 
 gameanimationandcontrol:
@@ -233,6 +260,7 @@ synctimer:
         sta rt
         cmp rt
         beq *-3
+        jsr objtospr
         rts
 
 // Object position to VIC sprite position
@@ -257,6 +285,7 @@ gamescroller:
         lda ypos
         and #$07
         clc
+scrollspeed:
         adc #$01
         tax
         and #$07
@@ -608,10 +637,11 @@ checkapple:
 
 removeappletopleft:
         :ReplaceCharTopLeft(score_100_top_left, score_100_top_right, score_100_bottom_right, score_100_bottom_left)
-        rts
+        jmp score100pts
+        
 removeappletopright:
         :ReplaceCharTopRight(score_100_top_right, score_100_top_left, score_100_bottom_left, score_100_bottom_right)
-        rts
+        jmp score100pts
 
 // Check if the player has collided into a banana
 
@@ -626,10 +656,11 @@ checkbanana:
 
 removebananatopleft:
         :ReplaceCharTopLeft(score_200_top_left, score_200_top_right, score_200_bottom_right, score_200_bottom_left)
-        rts
+        jmp score200pts
+
 removebananatopright:
         :ReplaceCharTopRight(score_200_top_right, score_200_top_left, score_200_bottom_left, score_200_bottom_right)
-
+        jmp score200pts
 
 // Check if the player has collided into cherries
 
@@ -644,10 +675,10 @@ checkcherries:
 
 removecherriestopleft:
         :ReplaceCharTopLeft(score_300_top_left, score_300_top_right, score_300_bottom_right, score_300_bottom_left)
-        rts
+        jmp score300pts
 removecherriestopright:
         :ReplaceCharTopRight(score_300_top_right, score_300_top_left, score_300_bottom_left, score_300_bottom_right) 
-        rts
+        jmp score300pts
 
 // Check if the player has collided into a strawberry
 
@@ -662,10 +693,11 @@ checkstrawberry:
 
 removestrawberrytopleft:
         :ReplaceCharTopLeft(score_500_top_left, score_500_top_right, score_500_bottom_right, score_500_bottom_left)
-        rts
+        jmp score500pts
 removestrawberrytopright:
         :ReplaceCharTopRight(score_500_top_right, score_500_top_left, score_500_bottom_left, score_500_bottom_right)
-        rts
+        jsr score500pts
+
 
 // Finally check if the player has collided into a bomb
 
@@ -680,12 +712,221 @@ checkbomb:
 
 removebombtopleft:
         :ReplaceCharTopLeft(death_top_left, death_top_right, death_bottom_right, death_bottom_left)
-        rts
+        jmp destroyplayer
 removebombtopright:
         :ReplaceCharTopRight(death_top_right, death_top_left, death_bottom_left, death_bottom_right)
-        rts
+        jmp destroyplayer
         
+// Game control - Tests game timer and level status
 
+gamecontrol:
+        
+        lda leveltime //Miliseconds
+        
+        cmp #$32 
+        beq switchsecond
+        inc leveltime
+        rts
+switchsecond:
+        lda #0
+        sta leveltime
+        jsr scorein10
+        lda leveltime+1
+        cmp #31       // 30 seconds 
+        beq switchtonextlevel
+        inc leveltime+1
+       
+        rts
+
+// New level, faster speed - less spawn time
+
+switchtonextlevel:
+        lda #0
+        sta leveltime+1
+        sta leveltime
+        inc levelpointer
+        lda #2
+      //  sta ypos
+        sta spawntime
+        
+        lda spawnlimit
+        sec
+        sbc #2
+        cmp #2
+        bcs skipdeduct
+        lda #2
+        sta spawnlimit
+skipdeduct:
+
+        inc scrollspeed+1
+        lda scrollspeed+1
+        cmp #9
+        beq gamecomplete
+        jmp maskpanel
+
+gamecomplete:
+        jmp tempwait // For now jumps to flashing border
+
+// Mask score panel to screen RAM
+
+maskpanel:
+        lda levelpointer
+        clc
+        adc #$01
+        eor #$30
+        sta levelchars
+        ldx #0
+copyscorehi:
+        lda score,x
+        sta scorechars,x
+        lda hiscore,x
+        sta hiscorechars,x
+        inx
+        cpx #6
+        bne copyscorehi
+        rts
+
+// Scoring points. (This is based on the type of fruit
+// which the player has collected).
+
+// Apple 100 points
+// Banana 200 points
+// Cherries 300 points
+// Strawberry 500 points
+
+score500pts:
+        jsr scorein100
+        jsr scorein100
+score300pts:
+        jsr scorein100
+score200pts:
+        jsr scorein100
+score100pts:
+        jsr scorein100
+        rts
+
+scorein100:
+        inc score+3
+        ldx #3
+scoreloop1:
+        lda score,x
+        cmp #$3a
+        bne score100ok
+        lda #$30
+        sta score,x
+        inc score-1,x
+score100ok:
+        dex
+        bne scoreloop1
+        jmp maskpanel
+
+// Score 10 points
+
+scorein10:
+        inc score+4
+        ldx #4
+scoreloop3:
+        lda score,x
+        cmp #$3a
+        bne score10ok
+        lda #$30
+        sta score,x 
+        inc score-1,x
+score10ok:
+        dex
+        bne scoreloop3
+        jmp maskpanel
+        
+// The player collided into a bomb. The game is
+// now over.
+
+destroyplayer:
+        ldx #$00
+updateattribs:
+        ldy $0400,x
+        lda attribs,y
+        sta $d800,x
+        ldy $0500,x
+        lda attribs,y
+        sta $d900,x
+        ldy $0600,x
+        lda attribs,y
+        sta $da00,x
+        ldy $06e8,x
+        lda attribs,y
+        sta $dae8,x
+        inx
+        bne updateattribs
+        lda #0
+        sta animpointer1
+        sta animdelay
+        
+explosionloop:
+        jsr synctimer
+        jsr animateexploder
+        jmp explosionloop
+
+animateexploder:
+        lda animdelay
+        cmp #2
+        beq doblast
+        inc animdelay
+        rts
+doblast:
+        lda #0
+        sta animdelay
+        ldx animpointer1
+        lda explosionframe,x
+        sta $07f8
+        sta $07f9
+        sta $07fa
+        lda #$07
+        sta $d027
+        sta $d028
+        sta $d029
+        inx
+        cpx #9
+        beq explodeend
+        inc animpointer1
+        rts
+explodeend:
+        
+        lda score
+        sec
+        lda hiscore+5
+        sbc score+5
+        lda hiscore+4
+        sbc score+4
+        lda hiscore+3
+        sbc score+3
+        lda hiscore+2
+        sbc score+2
+        lda hiscore+1
+        sbc score+1
+        lda hiscore
+        sbc score
+        bpl notnewhiscore
+
+        ldx #$00
+newhiscore:
+        lda score,x
+        sta hiscore,x
+        inx
+        cpx #$06
+        bne newhiscore
+
+notnewhiscore:
+
+// Temporary game over routines
+
+tempwait:
+        inc $d020
+        lda #16
+        bit $dc00
+        bne tempwait
+        jmp $4000
+        
+        
 // ### In game pointers ###
 
 pointers:
@@ -699,6 +940,8 @@ spawntime: .byte 0
 spawnallowed: .byte 0
 sequence1: .byte 0
 sequence2: .byte 0
+leveltime: .byte 0,0
+levelpointer: .byte 0
 
 
 pointersend:
@@ -794,6 +1037,12 @@ bottom_left_lo:
         .byte $34,$36,$38,$3a,$3c,$3e,$40,$42
 bottom_right_lo:
         .byte $35,$37,$39,$3b,$3d,$3f,$41,$43
+
+// Score pointers
+
+score: .byte $30,$30,$30,$30,$30,$30
+level: .byte $31
+hiscore: .byte $30,$30,$30,$30,$30,$30
 
         * = $5000 "RANDOM VALUES BETWEEN 0 AND 5"
 randtable1:

@@ -1,6 +1,6 @@
 // ******************************
-//            SNAKE BOMB
-//            ----------
+//         SNAKE vs BOMB
+//         -------------
 //
 //        By Richard Bayliss
 //
@@ -9,5 +9,4 @@
 //
 //   (C) 2022 The New Dimension
 // *******************************
-
 // ### HI SCORE DETECTION ###
