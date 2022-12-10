@@ -9,9 +9,9 @@
     <FilesGlobal>True</FilesGlobal>
     <BatchMode>False</BatchMode>
     <AppendToDisk>False</AppendToDisk>
-    <GenToDisk>False</GenToDisk>
-    <BuildToPrgFile>True</BuildToPrgFile>
-    <d64Name>SnakeBomb.d64</d64Name>
+    <GenToDisk>True</GenToDisk>
+    <BuildToPrgFile>False</BuildToPrgFile>
+    <d64Name>SnakeVSBomb.d64</d64Name>
     <Comments>Snake Bomb is a fun vertical scrolling hi score collect/eat 'em up and avoid 'em up. Guide the snake at the bottom of the screen and eat the fruit, but avoid eating the bombs, otherwise the snake will explode and the game is over.</Comments>
     <Author>Richard Bayliss</Author>
     <Email />
@@ -22,7 +22,7 @@
     <GitIgnoreList />
     <UsingKickAssembler>True</UsingKickAssembler>
     <KickOutputFile>_snakevsbomb.out</KickOutputFile>
-    <KickConfigFile>_snakvsebomb.cfg</KickConfigFile>
+    <KickConfigFile>SnakeBomb.cfg</KickConfigFile>
     <KickGenDebugInfo>True</KickGenDebugInfo>
     <Cartridge>
         <CrtBuildingCartridge>False</CrtBuildingCartridge>
@@ -73,7 +73,7 @@
             <IncludeInBuild>False</IncludeInBuild>
             <Regions />
             <Breakpoints />
-            <Bookmarks>147,</Bookmarks>
+            <Bookmarks>218,</Bookmarks>
             <Topmost>False</Topmost>
             <FileOpen>True</FileOpen>
         </SourceFile>
@@ -90,6 +90,17 @@
         </SourceFile>
         <SourceFile>
             <Name>macros.asm</Name>
+            <PrgName />
+            <FileType>12</FileType>
+            <IncludeInBuild>False</IncludeInBuild>
+            <Regions />
+            <Breakpoints />
+            <Bookmarks />
+            <Topmost>False</Topmost>
+            <FileOpen>True</FileOpen>
+        </SourceFile>
+        <SourceFile>
+            <Name>pointers.asm</Name>
             <PrgName />
             <FileType>12</FileType>
             <IncludeInBuild>False</IncludeInBuild>

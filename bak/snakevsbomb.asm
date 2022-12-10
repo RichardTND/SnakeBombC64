@@ -17,13 +17,24 @@
         .import source "variables.asm"
         .import source "macros.asm"
         
-BasicUpstart2(game)
+BasicUpstart2(setup)
 
-// ### Title screen scrolltext ###
+        *=$080d "One time code setup"
 
-        *=$0900 "SCROLLTEXT"
-scrolltext:
-        .import text "c64/scrolltext.txt"
+setup:  lda $d012
+        cmp $d012
+        beq *-3
+        bmi setup
+        cmp #$20
+        bcc setntsc
+        lda #1
+        sta system
+        jmp main
+setntsc: 
+        lda #0
+        sta system
+
+main:   jmp $4000
 
 // ### Import music data ###
 

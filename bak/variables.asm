@@ -16,6 +16,8 @@
 
 .const musicinit = $1000 // Music init address
 .const musicplay = $1003 // Music play address
+.const sfxplay = $1006
+
 .const screen = $0400 // Screen RAM
 .const colour = $d800 // Colour RAM
 
@@ -117,4 +119,35 @@
 .const scorechars = $0776 // Score masking
 .const levelchars = $0788 // Level masxking (possibly single char)
 .const hiscorechars = $0792 // Hi score chars
+
+// Sprite values (Letters)
+
+.var letterG = $94
+.var letterE = $95
+.var letterT = $96 
+.var letterR = $97
+.var letterA = $98
+.var letterD = $99
+.var letterY = $9a
+.var letterM = $9b
+.var letterO = $9c
+.var letterV = $9d
+.var letterW = $9e
+.var letterN = $9f
+.var letterL = $a0
+
+// In game music parameters
+
+.var gamemusic = $00
+.var getreadyjingle = $01
+.var gameoverjingle = $02
+.var welldonejingle = $03
+.var titlemusic = $04
+.var hiscoremusic = $05
+
+// Bomb animation parameters
+
+.const bombcharsrc = $3000+(135*8)
+.const bombchartgt = $3000+(108*8)
+
 

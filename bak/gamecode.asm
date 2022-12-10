@@ -107,8 +107,7 @@ backuploop:
         lda #$07
         sta $d023
 
-
-        jsr setupplayer
+       
 
         // Mask score panel to screen once
         
@@ -134,10 +133,82 @@ backuploop:
         sta $d01a
         lda #$1b
         sta $d011
-        lda #$00
+        lda #getreadyjingle
         jsr musicinit
         cli
+        
+// Main GET READY loop (Get Ready sprites)
+
+        lda #$00        // Switch off sprites
+        sta $d015
+        
+        ldx #$00
+clearspriterange:
+        lda #$00
+        sta $d000,x
+        sta objpos,x
+        inx
+        cpx #$10
+        bne clearspriterange
+
+        // Setup the GET READY sprites 
+
+        ldx #$00
+setupgetreadysprites:
+        lda getreadysprites,x
+        sta $07f8,x
+        inx
+        cpx #8
+        bne setupgetreadysprites
+
+        ldx #$00
+positiongetready:
+        lda getreadypos,x
+        sta objpos,x
+        inx
+        cpx #$10
+        bne positiongetready
+        lda #1
+        sta $d027
+        
+        // Main loop for GET READY scene
+        lda #$ff
+        sta $d015
+        sta $d01c
+        lda #$00
+        sta firebutton
+getreadyloop:
+        jsr synctimer
+        jsr spriteflashroutine
+        inc randpointer1
+        inc randpointer2
+        
+        lda $dc00
+        lsr
+        lsr
+        lsr
+        lsr
+        lsr
+        bit firebutton
+        ror firebutton
+        bmi getreadyloop
+        bvc getreadyloop
+        
+        lda #0
+        sta firebutton
+        
+        ldx #$00
+clearspritesaway:
+        sta $d000,x
+        sta objpos,x
+        inx
+        cpx #16
+        bne clearspritesaway
+        jsr setupplayer
+        lda #gamemusic
+        jsr musicinit
         jmp gameloop
+        
 
 gameirq1:   // Raster split 1
         asl $d019
@@ -169,7 +240,8 @@ gameirq2:   // Raster split 2
        
         jmp $ea7e
 
-gameirq3:
+gameirq3:    // Raster split 3
+
         asl $d019
         lda #split3
         sta $d012
@@ -188,7 +260,8 @@ gameirq3:
         sty $0315
         jmp $ea7e
 
-gameirq4:
+gameirq4:       // Raster split 4
+
         asl $d019
         lda #split4
         sta $d012
@@ -198,13 +271,30 @@ gameirq4:
        
          lda #1
         sta rt
-        jsr musicplay
+        jsr musicplayer
         ldx #<gameirq1
         ldy #>gameirq1
         stx $0314
         sty $0315
         
         jmp $ea7e
+
+// PAL/NTSC music speed check
+
+musicplayer:
+        lda system
+        cmp #1
+        beq pal
+        inc ntsctimer
+        lda ntsctimer
+        cmp #6
+        beq resetntsctimer
+pal:    jsr musicplay
+        rts
+resetntsctimer:
+        lda #0
+        sta ntsctimer
+        rts
 
 // SUBROUTINE: Stop interrupts playing 
         
@@ -244,11 +334,13 @@ gameloop:
         jsr gamescroller
         jsr gameanimationandcontrol
         jsr gamecontrol
+        
         jmp gameloop
 
 gameanimationandcontrol:
         jsr animatesnake
         jsr playercontroller
+        jsr animbombs
         rts
 
 // Sync raster time
@@ -637,10 +729,12 @@ checkapple:
 
 removeappletopleft:
         :ReplaceCharTopLeft(score_100_top_left, score_100_top_right, score_100_bottom_right, score_100_bottom_left)
+        jsr playapplesfx
         jmp score100pts
         
 removeappletopright:
         :ReplaceCharTopRight(score_100_top_right, score_100_top_left, score_100_bottom_left, score_100_bottom_right)
+        jsr playapplesfx
         jmp score100pts
 
 // Check if the player has collided into a banana
@@ -656,10 +750,12 @@ checkbanana:
 
 removebananatopleft:
         :ReplaceCharTopLeft(score_200_top_left, score_200_top_right, score_200_bottom_right, score_200_bottom_left)
+        jsr playbananasfx
         jmp score200pts
 
 removebananatopright:
         :ReplaceCharTopRight(score_200_top_right, score_200_top_left, score_200_bottom_left, score_200_bottom_right)
+        jsr playbananasfx
         jmp score200pts
 
 // Check if the player has collided into cherries
@@ -675,9 +771,11 @@ checkcherries:
 
 removecherriestopleft:
         :ReplaceCharTopLeft(score_300_top_left, score_300_top_right, score_300_bottom_right, score_300_bottom_left)
+        jsr playcherriessfx
         jmp score300pts
 removecherriestopright:
         :ReplaceCharTopRight(score_300_top_right, score_300_top_left, score_300_bottom_left, score_300_bottom_right) 
+        jsr playcherriessfx
         jmp score300pts
 
 // Check if the player has collided into a strawberry
@@ -693,9 +791,11 @@ checkstrawberry:
 
 removestrawberrytopleft:
         :ReplaceCharTopLeft(score_500_top_left, score_500_top_right, score_500_bottom_right, score_500_bottom_left)
+        jsr playstrawberrysfx
         jmp score500pts
 removestrawberrytopright:
         :ReplaceCharTopRight(score_500_top_right, score_500_top_left, score_500_bottom_left, score_500_bottom_right)
+        jsr playstrawberrysfx
         jsr score500pts
 
 
@@ -712,9 +812,11 @@ checkbomb:
 
 removebombtopleft:
         :ReplaceCharTopLeft(death_top_left, death_top_right, death_bottom_right, death_bottom_left)
+        jsr playbombsfx
         jmp destroyplayer
 removebombtopright:
         :ReplaceCharTopRight(death_top_right, death_top_left, death_bottom_left, death_bottom_right)
+        jsr playbombsfx
         jmp destroyplayer
         
 // Game control - Tests game timer and level status
@@ -732,7 +834,7 @@ switchsecond:
         sta leveltime
         jsr scorein10
         lda leveltime+1
-        cmp #31       // 30 seconds 
+        cmp #46      // 45 seconds 
         beq switchtonextlevel
         inc leveltime+1
        
@@ -762,10 +864,102 @@ skipdeduct:
         lda scrollspeed+1
         cmp #9
         beq gamecomplete
+        jsr playlevelupsfx
         jmp maskpanel
 
+
+// Game completed ... Stop the scroll and make the snake leave the 
+// game screen.
+
 gamecomplete:
-        jmp tempwait // For now jumps to flashing border
+        
+gcloop1:        
+        jsr synctimer
+        jsr animatesnake
+        jsr movesnakeoutofscene
+        
+        jmp gcloop1
+        // Move sprites upwards slowly, until all sprites have 
+        // left the screen.
+
+// Move snake out of scene
+
+movesnakeoutofscene:
+        lda objpos+1
+        sec
+        sbc #2
+        cmp #$0c
+        bcs setupheadout
+        lda #$00
+        sta objpos
+setupheadout:
+        sta objpos+1
+        lda objpos+3
+        sec
+        sbc #2
+        cmp #$0c
+        bcs setupbodyout
+        lda #$00
+        sta objpos+2
+setupbodyout:
+        sta objpos+3
+        lda objpos+5
+        sec
+        sbc #2
+        cmp #$0c
+        bcs setuptailout
+        jmp processwelldone
+setuptailout:
+        sta objpos+5
+        rts
+
+// Process the well DONE sprites
+processwelldone:
+        jsr checkforhiscore
+        jsr maskpanel
+
+        lda #$ff
+        sta $d015
+        sta $d01c
+
+        ldx #$00
+transferwelldone:
+        lda welldonesprites,x
+        sta $07f8,x
+        inx
+        cpx #$08
+        bne transferwelldone
+
+        ldx #$00
+setwelldonepos:
+        lda welldonepos,x
+        sta objpos,x
+        inx
+        cpx #$10
+        bne setwelldonepos
+        jmp gameoverloop
+
+        // Setup the WELL DONE jingle
+
+        lda #welldonejingle
+        jsr musicinit
+
+gameoverloop:
+        jsr synctimer
+        jsr spriteflashroutine
+        lda $dc00
+        lsr
+        lsr
+        lsr
+        lsr
+        lsr
+        bit firebutton
+        ror firebutton
+        bmi gameoverloop
+        bvc gameoverloop
+
+        jmp $4000 // Temporary jump after pressing fire
+        
 
 // Mask score panel to screen RAM
 
@@ -890,7 +1084,42 @@ doblast:
         inc animpointer1
         rts
 explodeend:
-        
+        jsr checkforhiscore
+// Display game over sprites
+
+        ldx #$00
+removespritesforgo:
+        lda #$00
+        sta $d000,x
+        sta objpos,x
+        inx
+        cpx #$10
+        bne removespritesforgo
+        lda #$ff
+        sta $d015
+        sta $d01c
+
+        ldx #$00
+setupgameoversprites:
+        lda gameoversprites,x
+        sta $07f8,x
+        inx
+        cpx #$08
+        bne setupgameoversprites
+
+        ldx #$00
+posgameover:
+        lda gameoverpos,x
+        sta objpos,x
+        inx
+        cpx #$10
+        bne posgameover
+        lda #gameoverjingle
+        jsr musicinit
+        jmp gameoverloop
+
+// Check for new hi score in game
+checkforhiscore:
         lda score
         sec
         lda hiscore+5
@@ -916,141 +1145,115 @@ newhiscore:
         bne newhiscore
 
 notnewhiscore:
-
-// Temporary game over routines
-
-tempwait:
-        inc $d020
-        lda #16
-        bit $dc00
-        bne tempwait
-        jmp $4000
         
-        
-// ### In game pointers ###
+// Flash routine for GET READY, GAME OVER and WELL DONE sprites
 
-pointers:
-rt:     .byte 0 // Sync Raster timer    
-ypos:   .byte 0 // $D011 scroll control register    
-animdelay: .byte 0
-animpointer1: .byte 0
-animpointer2: .byte 0
-objpos: .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-spawntime: .byte 0
-spawnallowed: .byte 0
-sequence1: .byte 0
-sequence2: .byte 0
-leveltime: .byte 0,0
-levelpointer: .byte 0
+spriteflashroutine:
 
+        lda spriteflashdelay
+        cmp #1
+        beq spriteflashok
+        inc spriteflashdelay
+        rts
+spriteflashok:
+        lda #$00                 
+        sta spriteflashdelay
+        ldx spriteflashpointer
+        lda spriteflashtable,x
+        sta $d027
+        sta $d028
+        sta $d029
+        sta $d02a
+        sta $d02b
+        sta $d02c
+        sta $d02d
+        sta $d02e
+        inx
+        cpx #spriteflashend-spriteflashtable
+        beq finishedflash
+        inc spriteflashpointer
+        rts
+finishedflash:
+        ldx #0
+        stx spriteflashpointer
+        rts
 
-pointersend:
+// Charset animation
 
-// Random pointers - MUST NOT BE INITIALIZED
-spawnlimit: .byte 8
-randpointer1: .byte 0
-randpointer2: .byte 0
+animbombs:
+        lda charanimdelay
+        cmp #4
+        beq docharanim
+        inc charanimdelay
+        rts
+docharanim:
+        lda #0
+        sta charanimdelay
+        ldx #$00
+bombloop1:
+        lda bombcharsrc,x
+        sta bombcharsrc+(7*8),x
+        inx
+        cpx #$08
+        bne bombloop1
+        ldx  #$00
+bombloop2:
+        lda bombcharsrc+8,x
+        sta bombcharsrc,x
+        inx
+        cpx #$38
+        bne bombloop2
+        ldx #$00
+bombloop3:
+        lda bombcharsrc,x
+        sta bombchartgt,x
+        inx
+        cpx #8
+        bne bombloop3
+        rts
 
-// Sprite animation frames
+// ### Sound effects player ###
 
-snakehead: .byte $80
-snakebody: .byte $84
-snaketail: .byte $88
-explosion: .byte $83 
-letterG: .byte $94
-letterE: .byte $95
-letterT: .byte $96 
-letterR: .byte $97
-letterA: .byte $98
-letterD: .byte $99
-letterY: .byte $9a
-letterM: .byte $9b
-letterO: .byte $9c
-letterV: .byte $9d
-letterW: .byte $9e
-letterN: .byte $9f
-letterL: .byte $a0
+playapplesfx:
+        lda #<snakeapplessfx
+        ldy #>snakeapplessfx
+        ldx #7
+        jsr sfxplay
+        rts
 
-// Animation frames for snake
-// (6 frames)
+playbananasfx:
+        lda #<snakebananasfx
+        ldy #>snakebananasfx
+        ldx #7
+        jsr sfxplay
+        rts
 
-snakeheadframe:
-        .byte $80,$81,$82,$83
-        .byte $82,$81
+playcherriessfx:
+        lda #<snakecherriessfx
+        ldy #>snakecherriessfx
+        ldx #7
+        jsr sfxplay
+        rts
 
-// Snake body (4 frames)
+playstrawberrysfx:
+        lda #<snakestrawberrysfx
+        ldy #>snakestrawberrysfx
+        ldx #7
+        jsr sfxplay
+        rts
 
-snakebodyframe:
-        .byte $84,$85,$86,$87
+playbombsfx:
+        lda #<bombsfx
+        ldy #>bombsfx
+        ldx #7
+        jsr sfxplay
+        rts
 
-// Snake tail (4 frames)
+playlevelupsfx:
+        lda #<levelupsfx
+        ldy #>levelupsfx
+        ldx #7
+        jsr sfxplay
+        rts
 
-snaketailframe:
-        .byte $88,$89,$8a,$89
-
-// Explosion (9 frames)
-
-explosionframe:
-        .byte $8b,$8c,$8d,$8e,$8f
-        .byte $90,$91,$92,$93
-
-// ### Random objects to spawn via table
-
-
-// Obstacle objects (based on character set ID)
-
-char_top_left:
-        .byte apple_top_left            // Object ID 0
-        .byte banana_top_left           // Object ID 1
-        .byte cherries_top_left         // Object ID 2
-        .byte strawberry_top_left       // Object ID 3
-        .byte bomb_top_left             // Object ID 4
-
-char_top_right:
-        .byte apple_top_right
-        .byte banana_top_right
-        .byte cherries_top_right
-        .byte strawberry_top_right
-        .byte bomb_top_right
-
-char_bottom_left:
-        .byte apple_bottom_left
-        .byte banana_bottom_left
-        .byte cherries_bottom_left
-        .byte strawberry_bottom_left
-        .byte bomb_bottom_left
-
-char_bottom_right:
-        .byte apple_bottom_right
-        .byte banana_bottom_right
-        .byte cherries_bottom_right
-        .byte strawberry_bottom_right
-        .byte bomb_bottom_right
-
-// Charset top left storage position possibilities
-
-top_left_lo:
-        .byte $0c,$0e,$10,$12,$14,$16,$18,$1a
-top_right_lo:
-        .byte $0d,$0f,$11,$13,$15,$17,$19,$1b
-bottom_left_lo:
-        .byte $34,$36,$38,$3a,$3c,$3e,$40,$42
-bottom_right_lo:
-        .byte $35,$37,$39,$3b,$3d,$3f,$41,$43
-
-// Score pointers
-
-score: .byte $30,$30,$30,$30,$30,$30
-level: .byte $31
-hiscore: .byte $30,$30,$30,$30,$30,$30
-
-        * = $5000 "RANDOM VALUES BETWEEN 0 AND 5"
-randtable1:
-        .import c64 "c64/randgen5.prg"
-
-        * = $5200 "RANDOM VALUES BETWEEN 0 AND 8"
-randtable2:
-        .import c64 "c64/randgen8.prg"
-
-        
-
+        .import source "pointers.asm"
