@@ -14,17 +14,19 @@
 
 .var zp = $70 //Zeropage collision
 
-.const musicinit = $1000 // Music init address
-.const musicplay = $1003 // Music play address
-.const sfxplay = $1006
+.const musicinit = $9000 // Music init address
+.const musicplay = $9003 // Music play address
+.const sfxplay = $9006
 
 .const screen = $0400 // Screen RAM
 .const colour = $d800 // Colour RAM
-
+.const logocolour = $5800 
 .var snakeanimdelay = $05 // Duration of snake sprite animation
 
 .var stopzoneleft = $3a
 .var stopzoneright = $72
+
+.var leveltimelimit = $f4
 
 // ## Raster variables ##
 
@@ -138,11 +140,11 @@
 
 // In game music parameters
 
-.var gamemusic = $00
-.var getreadyjingle = $01
-.var gameoverjingle = $02
-.var welldonejingle = $03
-.var titlemusic = $04
+.var titlemusic = $00
+.var gamemusic = $01
+.var getreadyjingle = $02
+.var gameoverjingle = $03
+.var welldonejingle = $04
 .var hiscoremusic = $05
 
 // Bomb animation parameters
@@ -150,4 +152,8 @@
 .const bombcharsrc = $3000+(135*8)
 .const bombchartgt = $3000+(108*8)
 
+// Sprite copy for title screen
+
+.const vssprite1 = $2740
+.const vssprite2 = $2840
 

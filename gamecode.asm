@@ -17,7 +17,24 @@
 // use Kernal routines, since higher memory is NOT
 // going to be used for this game.
 
+ 
+        lda #251
+        sta $0328
         jsr stopints // Stop interrupts
+        lda #$98+40
+        sta blackchr1+1
+        lda #$48+40
+        sta blackchr2+1
+        lda #$10
+        sta ypos
+
+        ldx #$00
+copyhiscore:
+        lda hiscore1,x
+        sta hiscore,x   
+        inx 
+        cpx #$06
+        bne copyhiscore
 
 // Initialize all of the game pointers
 
@@ -128,7 +145,7 @@ backuploop:
         lda $dd0d
         lda #$22
         sta $d012
-        lda #$ff
+        lda #$01
         sta $d019
         sta $d01a
         lda #$1b
@@ -207,6 +224,8 @@ clearspritesaway:
         jsr setupplayer
         lda #gamemusic
         jsr musicinit
+        lda #$10
+        sta ypos
         jmp gameloop
         
 
@@ -214,10 +233,14 @@ gameirq1:   // Raster split 1
         asl $d019
         lda $dc0d
         sta $dd0d
+
         lda #split1
         sta $d012
-       
-        
+        lda #$02
+        sta $d022
+        lda #$07
+        sta $d023
+
         ldx #<gameirq2
         ldy #>gameirq2
         stx $0314
@@ -225,35 +248,33 @@ gameirq1:   // Raster split 1
         jmp $ea7e
 
 gameirq2:   // Raster split 2
-
         asl $d019
         lda #split2
         sta $d012
         lda ypos
-        ora #$10
         sta $d011 
-        
+        lda #$ff
+        sta $d015
         ldx #<gameirq3
         ldy #>gameirq3
         stx $0314
         sty $0315
-       
         jmp $ea7e
 
 gameirq3:    // Raster split 3
-
         asl $d019
         lda #split3
         sta $d012
-     
-        lda $d011
-        and #$07
-        ora #$70      
-        ldx #$06
-        dex
-        bne *-1 
+        lda #$7f
         sta $d011
-       
+        lda #0
+        sta $d015
+        lda #$0e
+        sta $d022
+        lda #$01
+        sta $d023
+        lda #1
+        sta rt
         ldx #<gameirq4
         ldy #>gameirq4
         stx $0314
@@ -261,40 +282,19 @@ gameirq3:    // Raster split 3
         jmp $ea7e
 
 gameirq4:       // Raster split 4
-
+        
         asl $d019
         lda #split4
         sta $d012
-       
-        lda #$17
+        
+        lda #$1f
         sta $d011
-       
-         lda #1
-        sta rt
-        jsr musicplayer
         ldx #<gameirq1
         ldy #>gameirq1
         stx $0314
         sty $0315
-        
+        jsr musicplayer
         jmp $ea7e
-
-// PAL/NTSC music speed check
-
-musicplayer:
-        lda system
-        cmp #1
-        beq pal
-        inc ntsctimer
-        lda ntsctimer
-        cmp #6
-        beq resetntsctimer
-pal:    jsr musicplay
-        rts
-resetntsctimer:
-        lda #0
-        sta ntsctimer
-        rts
 
 // SUBROUTINE: Stop interrupts playing 
         
@@ -306,14 +306,14 @@ stopints:
         sta $d021
         ldx #$31
         ldy #$ea
-        lda #$7f
+        lda #$81
         stx $0314
         sty $0315
         sta $dc0d
         sta $dd0d
         lda $dc0d
         lda $dd0d
-        lda #$ff
+        lda #$00
         sta $d019
         sta $d01a
         
@@ -339,8 +339,8 @@ gameloop:
 
 gameanimationandcontrol:
         jsr animatesnake
-        jsr playercontroller
-        jsr animbombs
+        jsr playercontroller       
+ 
         rts
 
 // Sync raster time
@@ -353,6 +353,7 @@ synctimer:
         cmp rt
         beq *-3
         jsr objtospr
+        jsr animbombs
         rts
 
 // Object position to VIC sprite position
@@ -374,26 +375,29 @@ loop:   lda objpos+1,x
 // Game scroller, scroll wraparound routine 
 
 gamescroller:
+        
         lda ypos
-        and #$07
+         
         clc
 scrollspeed:
         adc #$01
-        tax
-        and #$07
+        
         sta ypos
-        txa
-        adc #$f8 
+        lda ypos
+        cmp #$18 
         bcs dohardscroll
        
         rts
 dohardscroll:
-         
+        lda #$10
+        sta ypos
+
         jsr scrollseg1
         jsr scrollseg2
         jsr pickobstacle
         rts
 
+ 
 
 //Scroll segment 1 
 scrollseg1:
@@ -464,6 +468,7 @@ blankout:
         lda #$00
         sta chartemp+$0c,y
         sta chartemp+$34,y
+      
         dey
         bpl blankout
 skipfill:
@@ -480,20 +485,48 @@ spawnobject:
         // Randomly select number between
         // 1 and 5 (charsets)
 random5:
+        jsr randomizer
+        sta randpointer1
         ldx randpointer1
         lda randtable1,x
         sta sequence1
-        inc randpointer1
+        
         rts
 
         // Randomly select number between 1
         // and 8 (char position)
 random8:
+        
+        jsr randomizer
+        sta randpointer2
         ldx randpointer2
         lda randtable2,x
         sta sequence2
-        inc randpointer2
+        
         rts
+
+randomizer:
+        lda rand+1
+        sta rtemp
+        lda rand
+        asl
+        rol rtemp
+        asl
+        rol rtemp
+        clc
+        adc rand
+        pha
+        lda rtemp
+        adc rand+1
+        sta rand+1
+        pla
+        adc #$11
+        sta rand
+        lda rand+1
+        adc #$36
+        sta rand+1
+        rts
+        
         
         // Process the object 
 
@@ -557,7 +590,7 @@ setupplayer:
         sta objpos+2
         sta objpos+4
         
-        lda #$98
+        lda #$94
         clc
         sta objpos+1
         adc #$12
@@ -825,7 +858,7 @@ gamecontrol:
         
         lda leveltime //Miliseconds
         
-        cmp #$32 
+        cmp leveltimelimit
         beq switchsecond
         inc leveltime
         rts
@@ -834,10 +867,30 @@ switchsecond:
         sta leveltime
         jsr scorein10
         lda leveltime+1
-        cmp #46      // 45 seconds 
+        cmp #40     // 40 seconds 
         beq switchtonextlevel
         inc leveltime+1
-       
+        jsr deductcounter
+        rts
+
+        // Counter deduction ... The bar above and below the score panel
+        // should represent the amount of time before the level moves up 
+        // one position.
+
+deductcounter:
+        
+        dec blackchr1+1
+        dec blackchr2+1
+
+        ldx #$00
+black:  lda #$00
+blackchr1:
+        sta $db98+40
+blackchr2:
+        sta $db48+40
+        inx
+        cpx #$28
+        bne black
         rts
 
 // New level, faster speed - less spawn time
@@ -847,9 +900,7 @@ switchtonextlevel:
         sta leveltime+1
         sta leveltime
         inc levelpointer
-        lda #2
-      //  sta ypos
-        sta spawntime
+      
         
         lda spawnlimit
         sec
@@ -865,6 +916,18 @@ skipdeduct:
         cmp #9
         beq gamecomplete
         jsr playlevelupsfx
+        ldx #$27
+restorecounter:
+        lda #$09
+        sta $db48,x
+        sta $db98,x
+        dex
+        bpl restorecounter
+        lda #$98+40
+        sta blackchr1+1
+        lda #$48+40
+        sta blackchr2+1
+        jsr filllane
         jmp maskpanel
 
 
@@ -937,12 +1000,14 @@ setwelldonepos:
         inx
         cpx #$10
         bne setwelldonepos
+        
+        lda #welldonejingle
+        jsr musicinit
+        
         jmp gameoverloop
 
         // Setup the WELL DONE jingle
 
-        lda #welldonejingle
-        jsr musicinit
 
 gameoverloop:
         jsr synctimer
@@ -958,7 +1023,7 @@ gameoverloop:
         bmi gameoverloop
         bvc gameoverloop
 
-        jmp $4000 // Temporary jump after pressing fire
+        jmp titlescreen // Temporary jump after pressing fire
         
 
 // Mask score panel to screen RAM
@@ -1058,6 +1123,7 @@ updateattribs:
 explosionloop:
         jsr synctimer
         jsr animateexploder
+        jsr colourexplosion
         jmp explosionloop
 
 animateexploder:
@@ -1116,6 +1182,7 @@ posgameover:
         bne posgameover
         lda #gameoverjingle
         jsr musicinit
+        jsr checkforhiscore
         jmp gameoverloop
 
 // Check for new hi score in game
@@ -1146,6 +1213,22 @@ newhiscore:
 
 notnewhiscore:
         
+colourexplosion:
+
+// Screen explosion routine (while the snake explodes)        
+
+        ldx explpointer
+        lda screenexptbl,x
+        sta $d021
+        inx
+        cpx #14
+        beq setlastbyte
+        inc explpointer
+        rts
+setlastbyte:
+        ldx #13
+        stx explpointer
+        rts
 // Flash routine for GET READY, GAME OVER and WELL DONE sprites
 
 spriteflashroutine:
@@ -1255,5 +1338,28 @@ playlevelupsfx:
         ldx #7
         jsr sfxplay
         rts
+
+// Last but not least, game music player 
+
+
+// PAL/NTSC music speed check
+
+musicplayer:
+       
+        
+        lda system
+        cmp #1
+        beq pal
+        inc ntsctimer
+        lda ntsctimer
+        cmp #6
+        beq resetntsctimer
+pal:    jsr musicplay
+        rts
+resetntsctimer:
+        lda #0
+        sta ntsctimer
+        rts
+
 
         .import source "pointers.asm"

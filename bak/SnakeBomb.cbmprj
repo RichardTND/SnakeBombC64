@@ -46,6 +46,7 @@
     </BuildEvents>
     <BuildList>
         <FileName>snakevsbomb.asm</FileName>
+        <FileName>hiscore.asm</FileName>
     </BuildList>
     <DetermineBuildOrder>0</DetermineBuildOrder>
     <PaddingByte>0</PaddingByte>
@@ -73,7 +74,7 @@
             <IncludeInBuild>False</IncludeInBuild>
             <Regions />
             <Breakpoints />
-            <Bookmarks>218,</Bookmarks>
+            <Bookmarks>243,</Bookmarks>
             <Topmost>False</Topmost>
             <FileOpen>True</FileOpen>
         </SourceFile>

@@ -12,11 +12,12 @@
 
 // ### In game pointers ###
 
+ypos:   .byte 0 // $D011 scroll control register   
 system: .byte 0
 ntsctimer: .byte 0
+
 pointers:
 rt:     .byte 0 // Sync Raster timer    
-ypos:   .byte 0 // $D011 scroll control register   
 firebutton: .byte 0 
 animdelay: .byte 0
 animpointer1: .byte 0
@@ -31,8 +32,10 @@ leveltime: .byte 0,0
 levelpointer: .byte 0
 spriteflashpointer: .byte 0
 spriteflashdelay:   .byte 0
-
+explpointer: .byte 0
 pointersend:
+rtemp: .byte 0
+rand: .byte $51,$51
 
 // Random pointers - MUST NOT BE INITIALIZED
 spawnlimit: .byte 8
@@ -123,7 +126,13 @@ welldonepos:
         .byte $3e,$68,$4e,$68,$5e,$68,$6e,$68
         .byte $3e,$88,$4e,$88,$5e,$88,$6e,$88
         
+// Bomb screen explosion colour table
 
+screenexptbl:
+        .byte $09,$02,$08,$0a,$0f,$07,$01,$07,$0f,$0a,$08,$02,$09,$00
+
+
+        
 
 // ### Random objects to spawn via table
 
@@ -176,13 +185,39 @@ level: .byte $31
 hiscore: .byte $30,$30,$30,$30,$30,$30
 
 
-        * = $5000 "RANDOM VALUES BETWEEN 0 AND 5"
+        * = $5000 "256 byte value tables between 1 and 5"
 randtable1:
-        .import c64 "c64/randgen5.prg"
+        .byte 0,1,2,3,4,0,1,2,3,4,0,1,2,3,4,0,1,2,3,4
+        .byte 0,1,2,3,4,0,1,2,3,4,0,1,2,3,4,0,1,2,3,4
+        .byte 0,1,2,3,4,0,1,2,3,4,0,1,2,3,4,0,1,2,3,4
+        .byte 0,1,2,3,4,0,1,2,3,4,0,1,2,3,4,0,1,2,3,4
+        .byte 0,1,2,3,4,0,1,2,3,4,0,1,2,3,4,0,1,2,3,4
+        .byte 0,1,2,3,4,0,1,2,3,4,0,1,2,3,4,0,1,2,3,4
+        .byte 0,1,2,3,4,0,1,2,3,4,0,1,2,3,4,0,1,2,3,4
+        .byte 0,1,2,3,4,0,1,2,3,4,0,1,2,3,4,0,1,2,3,4
+        .byte 0,1,2,3,4,0,1,2,3,4,0,1,2,3,4,0,1,2,3,4
+        .byte 0,1,2,3,4,0,1,2,3,4,0,1,2,3,4,0,1,2,3,4
+        .byte 0,1,2,3,4,0,1,2,3,4,0,1,2,3,4,0,1,2,3,4
+        .byte 0,1,2,3,4,0,1,2,3,4,0,1,2,3,4,0,1,2,3,4
+        .byte 0,1,2,3,4,0,1,2,3,4,0,1,2,3,4,0
 
-        * = $5200 "RANDOM VALUES BETWEEN 0 AND 8"
+        * = $5200 "256 byte tables between 1 and 8"
+        
 randtable2:
-        .import c64 "c64/randgen8.prg"
+        .byte 0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7,0,1,2,3
+        .byte 4,5,6,7,0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
+        .byte 0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7,0,1,2,3
+        .byte 4,5,6,7,0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
+        .byte 0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7,0,1,2,3
+        .byte 4,5,6,7,0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
+        .byte 0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7,0,1,2,3
+        .byte 4,5,6,7,0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
+        .byte 0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7,0,1,2,3
+        .byte 4,5,6,7,0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
+        .byte 0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7,0,1,2,3
+        .byte 4,5,6,7,0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
+        .byte 0,1,2,3,4,5,6,70,1,2,3,4,5,6,7,0
+        
 
         * = $5400 "SOUND EFFECTS TABLES"
 snakeapplessfx:

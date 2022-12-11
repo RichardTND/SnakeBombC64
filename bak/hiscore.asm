@@ -10,3 +10,10 @@
 //   (C) 2022 The New Dimension
 // *******************************
 // ### HI SCORE DETECTION ###
+
+
+name:       .text "         "
+
+nameprompt: .text "             congratulations            "          
+            .text "  you have achieved an explosive score  "
+            .text "     please enter your name below!      "
