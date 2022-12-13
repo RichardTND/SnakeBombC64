@@ -703,7 +703,30 @@ notleft:
 
 sprcharcollision:
 testcollision:
-        lda $d000
+
+        lda #$00
+        sta hwsprx+1
+        lda #$01
+        sta hwspry+1
+        lda #1
+        sta issnakehead
+        jsr readcollider
+        lda #$02
+        sta hwsprx+1
+        lda #$03
+        sta hwspry+1
+        lda #0
+        sta issnakehead
+        jsr readcollider
+        lda #$04
+        sta hwsprx+1
+        lda #$05
+        sta hwspry+1
+        lda #0
+        sta issnakehead
+        
+readcollider:
+hwsprx: lda $d000
         sec
 csmod1: sbc #$10
         sta zp
@@ -714,7 +737,7 @@ csmod1: sbc #$10
         lsr
         lsr
         sta zp+3
-        lda $d001
+hwspry: lda $d001
         sec
 csmod2: sbc #$2a
         lsr
@@ -742,10 +765,13 @@ colloop:
 
 checkchar:
         ldy zp+3
+        lda issnakehead
+        beq onlycheckbomb
         jsr checkapple
         jsr checkbanana
         jsr checkcherries
         jsr checkstrawberry
+onlycheckbomb:
         jmp checkbomb
 
 // Check if the player has collided into an apple
@@ -883,7 +909,7 @@ deductcounter:
         dec blackchr2+1
 
         ldx #$00
-black:  lda #$00
+black:  lda #$08
 blackchr1:
         sta $db98+40
 blackchr2:
@@ -1023,7 +1049,7 @@ gameoverloop:
         bmi gameoverloop
         bvc gameoverloop
 
-        jmp titlescreen // Temporary jump after pressing fire
+        jmp hiscorereader // Temporary jump after pressing fire
         
 
 // Mask score panel to screen RAM
@@ -1185,33 +1211,6 @@ posgameover:
         jsr checkforhiscore
         jmp gameoverloop
 
-// Check for new hi score in game
-checkforhiscore:
-        lda score
-        sec
-        lda hiscore+5
-        sbc score+5
-        lda hiscore+4
-        sbc score+4
-        lda hiscore+3
-        sbc score+3
-        lda hiscore+2
-        sbc score+2
-        lda hiscore+1
-        sbc score+1
-        lda hiscore
-        sbc score
-        bpl notnewhiscore
-
-        ldx #$00
-newhiscore:
-        lda score,x
-        sta hiscore,x
-        inx
-        cpx #$06
-        bne newhiscore
-
-notnewhiscore:
         
 colourexplosion:
 
@@ -1361,5 +1360,33 @@ resetntsctimer:
         sta ntsctimer
         rts
 
+
+// Check for new hi score in game
+checkforhiscore:
+        lda score
+        sec
+        lda hiscore+5
+        sbc score+5
+        lda hiscore+4
+        sbc score+4
+        lda hiscore+3
+        sbc score+3
+        lda hiscore+2
+        sbc score+2
+        lda hiscore+1
+        sbc score+1
+        lda hiscore
+        sbc score
+        bpl notnewhiscore
+
+        ldx #$00
+newhiscore:
+        lda score,x
+        sta hiscore,x
+        inx
+        cpx #$06
+        bne newhiscore
+notnewhiscore:
+        rts
 
         .import source "pointers.asm"

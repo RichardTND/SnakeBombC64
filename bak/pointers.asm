@@ -35,6 +35,7 @@ spriteflashdelay:   .byte 0
 explpointer: .byte 0
 pointersend:
 rtemp: .byte 0
+issnakehead: .byte 0
 rand: .byte $51,$51
 
 // Random pointers - MUST NOT BE INITIALIZED
@@ -216,7 +217,7 @@ randtable2:
         .byte 4,5,6,7,0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
         .byte 0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7,0,1,2,3
         .byte 4,5,6,7,0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
-        .byte 0,1,2,3,4,5,6,70,1,2,3,4,5,6,7,0
+        .byte 0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7,0
         
 
         * = $5400 "SOUND EFFECTS TABLES"

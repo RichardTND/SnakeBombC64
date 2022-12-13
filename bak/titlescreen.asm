@@ -11,8 +11,7 @@
 // *******************************
 
 // ### TITLE SCREEN ###
-        lda #251
-        sta $0328
+        
         jsr stopints
 
         
@@ -79,6 +78,7 @@ setuplinecolour:
         sta colour+800,x
         sta colour+840,x
         sta colour+880,x
+        sta colour+920,x
         inx
         cpx #$28
         bne setuplinecolour
@@ -89,12 +89,7 @@ setuplinecolour:
         sta $d023
 
 
-        // Setup VS sprite 
-
-        lda #$c0
-        sta $5ff8
-        lda #$c1
-        sta $5ff9
+        
 
         ldx #0
 clearsprtitle:
@@ -105,9 +100,9 @@ clearsprtitle:
         cpx #$10
         bne clearsprtitle
 
-        lda #$ff
+        lda #$00
         sta $d015
-        sta $d01c
+       
         lda #0
         sta $d017
         sta $d01b
@@ -127,17 +122,6 @@ clearsprtitle:
         lda #$52
         sta objpos+1
         sta objpos+3
-         
-        ldx #$00
-getvssprite:
-        lda vssprite1,x
-        sta $7000,x
-        lda vssprite2,x
-        sta $7040,x
-        inx
-        cpx #$40
-        bne getvssprite
-        
         
         // Onetime - Display the credits page
 
@@ -229,7 +213,7 @@ tirq4:  asl $d019
 titleloop:
         jsr synctimer
         jsr pageflipper
-        jsr spriteswinger
+        
         lda $dc00
         lsr
         lsr
@@ -285,29 +269,29 @@ setupcredits:
         ldx #$00
 creditsloop:
         lda credits,x
-        sta screen+440,x
+        sta screen2+440,x
         lda credits+(1*40),x
-        sta screen+480,x
+        sta screen2+480,x
         lda credits+(2*40),x
-        sta screen+520,x
+        sta screen2+520,x
         lda credits+(3*40),x
-        sta screen+560,x
+        sta screen2+560,x
         lda credits+(4*40),x
-        sta screen+600,x
+        sta screen2+600,x
         lda credits+(5*40),x
-        sta screen+640,x
+        sta screen2+640,x
         lda credits+(6*40),x
-        sta screen+680,x
+        sta screen2+680,x
         lda credits+(7*40),x
-        sta screen+720,x
+        sta screen2+720,x
         lda credits+(8*40),x
-        sta screen+760,x
+        sta screen2+760,x
         lda credits+(9*40),x
-        sta screen+800,x
+        sta screen2+800,x
         lda credits+(10*40),x
-        sta screen+840,x
+        sta screen2+840,x
         lda credits+(11*40),x
-        sta screen+920,x
+        sta screen2+920,x
         inx
         cpx #$28
         bne creditsloop
@@ -320,29 +304,29 @@ displayhiscores:
         ldx #$00
 hiscoreloop:
         lda hiscoretable,x
-        sta screen+440,x
+        sta screen2+440,x
         lda hiscoretable+(1*40),x
-        sta screen+480,x
+        sta screen2+480,x
         lda hiscoretable+(2*40),x
-        sta screen+520,x
+        sta screen2+520,x
         lda hiscoretable+(3*40),x
-        sta screen+560,x
+        sta screen2+560,x
         lda hiscoretable+(4*40),x
-        sta screen+600,x
+        sta screen2+600,x
         lda hiscoretable+(5*40),x
-        sta screen+640,x
+        sta screen2+640,x
         lda hiscoretable+(6*40),x
-        sta screen+680,x
+        sta screen2+680,x
         lda hiscoretable+(7*40),x
-        sta screen+720,x
+        sta screen2+720,x
         lda hiscoretable+(8*40),x
-        sta screen+760,x
+        sta screen2+760,x
         lda hiscoretable+(9*40),x
-        sta screen+800,x
+        sta screen2+800,x
         lda hiscoretable+(10*40),x
-        sta screen+840,x
+        sta screen2+840,x
         lda hiscoretable+(11*40),x
-        sta screen+880,x
+        sta screen2+880,x
         inx
         cpx #$28
         bne hiscoreloop
@@ -354,29 +338,29 @@ displayicons:
         ldx #$00
 iconsloop:
         lda advancetable,x
-        sta screen+440,x
+        sta screen2+440,x
         lda advancetable+(1*40),x
-        sta screen+480,x
+        sta screen2+480,x
         lda advancetable+(2*40),x
-        sta screen+520,x
+        sta screen2+520,x
         lda advancetable+(3*40),x
-        sta screen+560,x
+        sta screen2+560,x
         lda advancetable+(4*40),x
-        sta screen+600,x
+        sta screen2+600,x
         lda advancetable+(5*40),x
-        sta screen+640,x
+        sta screen2+640,x
         lda advancetable+(6*40),x
-        sta screen+680,x
+        sta screen2+680,x
         lda advancetable+(7*40),x
-        sta screen+720,x
+        sta screen2+720,x
         lda advancetable+(8*40),x
-        sta screen+760,x
+        sta screen2+760,x
         lda advancetable+(9*40),x
-        sta screen+800,x
+        sta screen2+800,x
         lda advancetable+(10*40),x
-        sta screen+840,x
+        sta screen2+840,x
         lda advancetable+(11*40),x
-        sta screen+880,x
+        sta screen2+880,x
         
         inx
         cpx #$28
@@ -390,29 +374,29 @@ displayinstructions:
         ldx #$00
 instructionsloop:
         lda instructions,x
-        sta screen+440,x
+        sta screen2+440,x
         lda instructions+(1*40),x
-        sta screen+480,x
+        sta screen2+480,x
         lda instructions+(2*40),x
-        sta screen+520,x
+        sta screen2+520,x
         lda instructions+(3*40),x
-        sta screen+560,x
+        sta screen2+560,x
         lda instructions+(4*40),x
-        sta screen+600,x
+        sta screen2+600,x
         lda instructions+(5*40),x
-        sta screen+640,x
+        sta screen2+640,x
         lda instructions+(6*40),x
-        sta screen+680,x
+        sta screen2+680,x
         lda instructions+(7*40),x
-        sta screen+720,x
+        sta screen2+720,x
         lda instructions+(8*40),x
-        sta screen+760,x
+        sta screen2+760,x
         lda instructions+(9*40),x
-        sta screen+800,x
+        sta screen2+800,x
         lda instructions+(10*40),x
-        sta screen+840,x
+        sta screen2+840,x
         lda instructions+(11*40),x
-        sta screen+880,x
+        sta screen2+880,x
         inx
         cpx #$28
         bne instructionsloop
@@ -420,25 +404,15 @@ instructionsloop:
         sta pagevalue
         rts
 
-spriteswinger:
-        ldx spritepointer
-        lda sinustable,x
-        sta objpos
-        clc
-        adc #$0c
-        sta objpos+2
-        inc spritepointer
-        rts
 xpos:   .byte 0
 pagetime: .byte 0,0
 pagevalue: .byte 0
-spritepointer: .byte 0
 credits:
         // .text "0000000000111111111112222222223333333333"
         // .text "0123456789012345678901234567890123456789"
 
-           .text "   copyright (c) 2022 the new dimension "
-           .text "     written for the snake fun compo    "
+           .text "         £ 2022 the new dimension       "
+           .text "  written for the csdb snake fun compo  "
            .text "                                        "
            .text "    programming, charset and music by   "
            .text "             richard bayliss            "
@@ -447,53 +421,54 @@ credits:
            .text "         hugues (ax!s) poisseroux       "
            .text "                                        "
            .text "   plug your joystick into port 2 then  "
-           .text "            press fire to play          "
+           .text "             press fire to play         "
            .text "                                        "
            .text "                                        "
            .text "                                        "
 hiscoretable:
-           .text "       today's explosive hi scores      "
+           .text "       todays explosive hi scores       "
            .text "                                        "
-           .text "          01. "
+           .text "         01. "
 hiscorestart:
-name1:     .text "richard b - "
-hiscore1:  .text "000000        "
-           .text "          02. "
-name2:     .text "richard b - "
-hiscore2:  .text "000000        "
-           .text "          03. "
-name3:     .text "richard b - "
-hiscore3:  .text "000000        "
-           .text "          04. "
-name4:     .text "richard b - "
-hiscore4:  .text "000000        "
-           .text "          05. "
-name5:     .text "richard b - "
-hiscore5:  .text "000000        "
-           .text "          06. "
-name6:     .text "richard b - "
-hiscore6:  .text "000000        "
-           .text "          07. "
-name7:     .text "richard b - "
-hiscore7:  .text "000000        "
-           .text "          08. "
-name8:     .text "richard b - "
-hiscore8:  .text "000000        "
-           .text "          09. "
-name9:     .text "richard b - "
-hiscore9:  .text "000000        "
-           .text "          10. "
-hiscore10: .text "richard b - "
-name10:    .text "000000"
+
+name1:     .text "colubrid  - "
+hiscore1:  .text "011000         "
+           .text "         02. "
+name2:     .text "cobra     - "
+hiscore2:  .text "009900         "
+           .text "         03. "
+name3:     .text "rattler   - "
+hiscore3:  .text "008800         "
+           .text "         04. "
+name4:     .text "adder     - "
+hiscore4:  .text "007700         "
+           .text "         05. "
+name5:     .text "boa       - "
+hiscore5:  .text "006600         "
+           .text "         06. "
+name6:     .text "viper     - "
+hiscore6:  .text "005500         "
+           .text "         07. "
+name7:     .text "python    - "
+hiscore7:  .text "004400         "
+           .text "         08. "
+name8:     .text "old world - "
+hiscore8:  .text "003300         "
+           .text "         09. "
+name9:     .text "coachwhip - "
+hiscore9:  .text "002200         "
+           .text "         10. "
+name10:    .text "boomslang - "
+hiscore10: .text "001100 "
 hiscoreend: 
            .text "        "
            .text "                                        "
 instructions:
-           .text "                how to play             "
+           .text "               how to play              "
            .text "                                        "
            .text " guide your snake safely through the    "
            .text " lane. eat as much fruit as you possibly"
-           .text " can, but avoid eating the bombs or your"
+           .text " can, but avoid touching bombs or your  "
            .text " snake will explode, ending the game.   "
            .text "                                        "
            .text " there are eight levels to complete, and"

@@ -19,6 +19,7 @@
 .const sfxplay = $9006
 
 .const screen = $0400 // Screen RAM
+.const screen2 = $0428
 .const colour = $d800 // Colour RAM
 .const logocolour = $5800 
 .var snakeanimdelay = $05 // Duration of snake sprite animation
@@ -156,4 +157,12 @@
 
 .const vssprite1 = $2740
 .const vssprite2 = $2840
+
+// Hi score data
+
+.var scorelen = 6
+.var namelen = 9
+.var listlen = 10
+
+.label scoretext = score
 
